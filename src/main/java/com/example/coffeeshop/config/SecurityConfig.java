@@ -34,15 +34,17 @@ public class SecurityConfig {
                                                 // CUSTOMER
                                                 .requestMatchers(HttpMethod.GET, "/api/products/**")
                                                 .hasAnyRole("CUSTOMER", "MERCHANT", "ADMIN")
+                                                .requestMatchers("/api/merchant/**").hasRole("CUSTOMER")
 
                                                 // MERCHANT
                                                 .requestMatchers("/api/merchant/**")
                                                 .hasRole("MERCHANT")
+                                                .requestMatchers("/api/merchant/manage/**").hasRole("MERCHANT")
 
                                                 // ADMIN
                                                 .requestMatchers("/api/admin/**")
                                                 .hasRole("ADMIN")
-
+                                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
                                                 // DEFAULT
                                                 .anyRequest().authenticated())
                                 .addFilterBefore(jwtAuthenticationFilter,
