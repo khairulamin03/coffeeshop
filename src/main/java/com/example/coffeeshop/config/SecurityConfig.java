@@ -15,27 +15,31 @@ import com.example.coffeeshop.security.JwtAuthenticationFilter;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+        @Autowired
+        private JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        @Bean
+        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        http
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/customer/signup",
-                                "/api/auth/login")
-                        .permitAll()
-                        .anyRequest().authenticated())
-                .addFilterBefore(
-                        jwtAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class)
-                .httpBasic(https -> https.disable())
-                .formLogin(form -> form.disable());
+                http
+                                .csrf(csrf -> csrf.disable())
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers(
+                                                                "/api/customer/signup",
+                                                                "/api/auth/login")
+                                                .permitAll()
+                                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                                                .requestMatchers("/api/merchant/**").hasRole("MERCHANT")
+                                                .requestMatchers("/api/customer/**").hasRole("CUSTOMER")
+                                                .anyRequest().authenticated())
+                                .addFilterBefore(
+                                                jwtAuthenticationFilter,
+                                                UsernamePasswordAuthenticationFilter.class)
+                                .httpBasic(https -> https.disable())
+                                .formLogin(form -> form.disable());
 
-        return http.build();
-    }
+                return http.build();
+        }
 }
