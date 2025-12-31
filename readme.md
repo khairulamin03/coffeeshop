@@ -1,55 +1,62 @@
-# ☕ CoffeeShop POS Backend
+# ☕ Coffeeshop Backend API
 
-Backend API untuk aplikasi **Coffee Shop POS (Point of Sale)** yang mendukung **multi-role (Admin, Merchant, Customer)** dengan **JWT Authentication**, dibangun menggunakan **Spring Boot** dan **PostgreSQL (Docker)**.
+Backend REST API untuk aplikasi **Coffee Shop** menggunakan **Spring Boot**, **JWT Authentication**, dan **Role-Based Access Control (RBAC)**.
 
-Project ini dikembangkan sebagai **portfolio backend engineer**, dengan fokus pada:
-- Clean architecture
-- Security (JWT & Spring Security)
-- RESTful API design
-- Scalable role-based access control
+Project ini mendukung:
+- User authentication & authorization
+- Merchant registration flow (approval system)
+- Admin management
+- Standardized API response
+- PostgreSQL + Docker
 
 ---
 
 ## 🚀 Tech Stack
 
-- **Java 17**
-- **Spring Boot**
-- **Spring Security**
-- **JWT (JSON Web Token)**
-- **Spring Data JPA**
+- **Java 21**
+- **Spring Boot 4**
+- **Spring Security (JWT)**
+- **Spring Data JPA (Hibernate)**
 - **PostgreSQL**
 - **Docker & Docker Compose**
 - **Maven**
+- **Swagger / OpenAPI**
 
 ---
 
-## ✨ Main Features
+## 📦 Features
 
 ### 🔐 Authentication & Security
-- User registration (Sign Up)
-- User login
 - JWT-based authentication
-- Password hashing using BCrypt
-- Stateless authentication (no session)
+- Stateless session
+- Password encryption (BCrypt)
+- Custom `UserDetailsService`
+- Role-based endpoint protection
 
-### 👥 Role Management (In Progress)
-- ADMIN
-- MERCHANT
-- CUSTOMER
-- One user can have multiple roles
-- Role-based authorization
+### 👥 User & Role
+- User registration & login
+- Multiple roles per user
+- Roles:
+  - `CUSTOMER`
+  - `MERCHANT`
+  - `ADMIN`
 
-### 🏪 Coffee Shop & Product (Planned)
-- Merchant registration
-- Coffee shop management
-- Product & category CRUD
-- Multi-merchant ready
+### 🏪 Merchant Flow
+- Customer dapat mengajukan request menjadi merchant
+- Status merchant:
+  - `PENDING`
+  - `APPROVED`
+  - `REJECTED`
+- User **tidak bisa request ulang** jika masih `PENDING`
+- Admin dapat approve / reject merchant
+- Role otomatis bertambah saat merchant di-approve
 
----
+### 📄 Standard API Response
+Semua endpoint menggunakan format response yang konsisten:
 
-## 🔑 Authentication Flow (JWT)
-
-1. User login with email & password
-2. Spring Security authenticates credentials
-3. JWT token is generated if authentication succeeds
-4. Client sends token in request header:
+```json
+{
+  "status": "T | F",
+  "message": "string",
+  "data": {}
+}
