@@ -1,7 +1,10 @@
 package com.example.coffeeshop.service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Date;
 
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import com.example.coffeeshop.security.CustomUserDetails;
@@ -17,43 +20,45 @@ public class JwtService {
 
     public JwtService(JwtProperties properties) {
         this.properties = properties;
-
-        if (properties.getSecret() == null) {
-            throw new IllegalStateException("JWT secret is not configured!");
-        }
     }
 
-    // 🔐 GENERATE TOKEN
-    public String generateToken(CustomUserDetails user) {
-
+    public String generateToken(CustomUserDetails userDetails) {
         return Jwts.builder()
-                .setSubject(user.getUsername()) // email (principal)
-                .claim("role", user.getAuthorities())
+                .setSubject(userDetails.getUsername())
+                .claim("roles",
+                        userDetails.getAuthorities()
+                                .stream()
+                                .map(GrantedAuthority::getAuthority)
+                                .toList())
                 .setIssuedAt(new Date())
-                .setExpiration(
-                        new Date(System.currentTimeMillis() + properties.getExpiration()))
-                .signWith(
-                        Keys.hmacShaKeyFor(properties.getSecret().getBytes()))
+                .setExpiration(new Date(
+                        System.currentTimeMillis() + properties.getExpiration()))
+                .signWith(getSignKey())
                 .compact();
     }
 
-    // 🔓 EXTRACT EMAIL
     public String extractUsername(String token) {
         return getClaims(token).getSubject();
     }
 
-    // ✅ VALIDASI TOKEN
     public boolean isTokenValid(String token) {
-        return getClaims(token)
-                .getExpiration()
-                .after(new Date());
+        return extractExpiration(token).after(new Date());
+    }
+
+    private Date extractExpiration(String token) {
+        return getClaims(token).getExpiration();
     }
 
     private Claims getClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(properties.getSecret().getBytes())
+                .setSigningKey(getSignKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    private Key getSignKey() {
+        return Keys.hmacShaKeyFor(
+                properties.getSecret().getBytes(StandardCharsets.UTF_8));
     }
 }

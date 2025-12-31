@@ -3,6 +3,7 @@ package com.example.coffeeshop.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -23,22 +24,29 @@ public class SecurityConfig {
 
                 http
                                 .csrf(csrf -> csrf.disable())
-                                .sessionManagement(session -> session
-                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers(
-                                                                "/api/customer/signup",
-                                                                "/api/auth/login")
-                                                .permitAll()
-                                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                                                .requestMatchers("/api/merchant/**").hasRole("MERCHANT")
-                                                .requestMatchers("/api/customer/**").hasRole("CUSTOMER")
+
+                                                // PUBLIC
+                                                .requestMatchers("/api/auth/**").permitAll()
+                                                .requestMatchers("/api/customer/signup").permitAll()
+
+                                                // CUSTOMER
+                                                .requestMatchers(HttpMethod.GET, "/api/products/**")
+                                                .hasAnyRole("CUSTOMER", "MERCHANT", "ADMIN")
+
+                                                // MERCHANT
+                                                .requestMatchers("/api/merchant/**")
+                                                .hasRole("MERCHANT")
+
+                                                // ADMIN
+                                                .requestMatchers("/api/admin/**")
+                                                .hasRole("ADMIN")
+
+                                                // DEFAULT
                                                 .anyRequest().authenticated())
-                                .addFilterBefore(
-                                                jwtAuthenticationFilter,
-                                                UsernamePasswordAuthenticationFilter.class)
-                                .httpBasic(https -> https.disable())
-                                .formLogin(form -> form.disable());
+                                .addFilterBefore(jwtAuthenticationFilter,
+                                                UsernamePasswordAuthenticationFilter.class);
 
                 return http.build();
         }

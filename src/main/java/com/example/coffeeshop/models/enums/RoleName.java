@@ -1,8 +1,7 @@
 package com.example.coffeeshop.models.enums;
 
-public enum Role {
+public enum RoleName {
     CUSTOMER,
     MERCHANT,
     ADMIN
-
 }

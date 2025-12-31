@@ -16,22 +16,24 @@ public class CustomUserDetails implements UserDetails {
         this.user = user;
     }
 
-    @Override
-    public String getUsername() {
-        return user.getEmail(); // login pakai email
-    }
-
-    @Override
-    public String getPassword() {
-        return user.getPassword(); // password HASH
-    }
-
+    // 🔥 INI PALING PENTING
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return user.getRoles()
                 .stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+                .map(role -> new SimpleGrantedAuthority(
+                        "ROLE_" + role.getName().name()))
                 .toList();
+    }
+
+    @Override
+    public String getUsername() {
+        return user.getEmail(); // EMAIL = USERNAME
+    }
+
+    @Override
+    public String getPassword() {
+        return user.getPassword();
     }
 
     @Override

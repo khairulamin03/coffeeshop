@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.coffeeshop.DTO.Request.SignUpRequest;
 import com.example.coffeeshop.models.entities.RoleEntity;
 import com.example.coffeeshop.models.entities.Users;
+import com.example.coffeeshop.models.enums.RoleName;
 import com.example.coffeeshop.models.repository.RoleRepository;
 import com.example.coffeeshop.models.repository.UserRepository;
 
@@ -40,7 +41,7 @@ public class SignUpService {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         RoleEntity customerRole = roleRepository
-                .findByName("CUSTOMER")
+                .findByName(RoleName.CUSTOMER)
                 .orElseThrow();
 
         user.getRoles().add(customerRole);

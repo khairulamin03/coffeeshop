@@ -1,6 +1,7 @@
 package com.example.coffeeshop.config;
 
 import com.example.coffeeshop.models.entities.RoleEntity;
+import com.example.coffeeshop.models.enums.RoleName;
 import com.example.coffeeshop.models.repository.RoleRepository;
 
 public class RoleSeeder {
@@ -11,16 +12,16 @@ public class RoleSeeder {
     }
 
     public void run(String... args) {
-        createRoleIfNotExists("ADMIN");
-        createRoleIfNotExists("MERCHANT");
-        createRoleIfNotExists("CUSTOMER");
+        createRoleIfNotExists(RoleName.ADMIN);
+        createRoleIfNotExists(RoleName.MERCHANT);
+        createRoleIfNotExists(RoleName.CUSTOMER);
     }
 
-    private void createRoleIfNotExists(String roleName) {
+    private void createRoleIfNotExists(RoleName roleName) {
         roleRepository.findByName(roleName)
                 .orElseGet(() -> {
                     RoleEntity role = new RoleEntity();
-                    role.setName(roleName);
+                    role.setName(roleName); // ✅ ENUM
                     return roleRepository.save(role);
                 });
     }
