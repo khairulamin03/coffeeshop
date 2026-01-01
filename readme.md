@@ -35,7 +35,7 @@ Project ini mendukung:
 
 ### 👥 User & Role
 - User registration & login
-- Multiple roles per user
+- Multiple roles per user (Many-to-Many)
 - Roles:
   - `CUSTOMER`
   - `MERCHANT`
@@ -47,16 +47,28 @@ Project ini mendukung:
   - `PENDING`
   - `APPROVED`
   - `REJECTED`
-- User **tidak bisa request ulang** jika masih `PENDING`
+- User **tidak bisa request ulang** jika status masih `PENDING`
 - Admin dapat approve / reject merchant
-- Role otomatis bertambah saat merchant di-approve
+- Role `MERCHANT` otomatis ditambahkan saat request di-approve
+- Sistem aman dari double request
 
-### 📄 Standard API Response
-Semua endpoint menggunakan format response yang konsisten:
+---
 
-```json
-{
-  "status": "T | F",
-  "message": "string",
-  "data": {}
-}
+## 🔄 Merchant Business Flow
+
+### 1️⃣ Customer Request Merchant
+- Endpoint hanya bisa diakses oleh role `CUSTOMER`
+- Sistem akan cek:
+  - Apakah user sudah memiliki request `PENDING`
+- Jika ada → response gagal (tanpa exception)
+- Jika tidak ada → request dibuat dengan status `PENDING`
+
+### 2️⃣ Admin Review Merchant
+- Admin melihat daftar merchant request
+- Admin dapat:
+  - Approve → status jadi `APPROVED`, role `MERCHANT` ditambahkan
+  - Reject → status jadi `REJECTED`
+
+### 3️⃣ Role Update
+- User **tidak kehilangan role lama**
+- Contoh:
