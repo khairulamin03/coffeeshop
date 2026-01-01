@@ -1,14 +1,19 @@
 package com.example.coffeeshop.service;
 
+import java.time.LocalDateTime;
+import java.util.Map;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.coffeeshop.models.entities.MerchantRequest;
+import com.example.coffeeshop.config.MessageStatus;
 import com.example.coffeeshop.models.entities.RoleEntity;
+import com.example.coffeeshop.models.entities.Users;
 import com.example.coffeeshop.models.enums.MerchantStatus;
 import com.example.coffeeshop.models.enums.RoleName;
 import com.example.coffeeshop.models.repository.MerchantRequestRepository;
 import com.example.coffeeshop.models.repository.RoleRepository;
+import com.example.coffeeshop.models.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,21 +21,46 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class AdminMerchantService {
-    private final MerchantRequestRepository merchantRequestRepository;
-    private final RoleRepository roleRepository;
+        private final MerchantRequestRepository merchantRequestRepository;
+        private final RoleRepository roleRepository;
+        private final UserRepository userRepository;
 
-    public void approveMerchant(Long requestId) {
+        public MessageStatus<?> approveMerchant(Long requestId) {
 
-        MerchantRequest request = merchantRequestRepository.findById(requestId)
-                .orElseThrow();
+                // Update request status
+                return merchantRequestRepository.findById(requestId)
+                                .map(request -> {
 
-        request.setStatus(MerchantStatus.APPROVED);
+                                        if (request.getStatus() == MerchantStatus.APPROVED) {
+                                                return MessageStatus.fail(
+                                                                "Merchant request already approved", null);
+                                        } else if (request.getStatus() == MerchantStatus.PENDING) {
+                                                return MessageStatus.fail(
+                                                                "Merchant request already processed", null);
+                                        }
 
-        RoleEntity merchantRole = roleRepository.findByName(RoleName.MERCHANT)
-                .orElseThrow();
+                                        // update request
+                                        request.setStatus(MerchantStatus.APPROVED);
+                                        request.setApprovedAt(LocalDateTime.now());
 
-        request.getUser()
-                .getRoles()
-                .add(merchantRole);
-    }
+                                        // add MERCHANT role
+                                        Users user = request.getUser();
+                                        RoleEntity merchantRole = roleRepository
+                                                        .findByName(RoleName.MERCHANT)
+                                                        .orElseThrow();
+
+                                        user.getRoles().add(merchantRole);
+
+                                        merchantRequestRepository.save(request);
+                                        userRepository.save(user);
+
+                                        return MessageStatus.success(
+                                                        "Merchant approved successfully",
+                                                        Map.of(
+                                                                        "requestId", request.getId(),
+                                                                        "userEmail", user.getEmail(),
+                                                                        "newRole", "MERCHANT"));
+                                })
+                                .orElseGet(() -> MessageStatus.fail("Merchant request not found", null));
+        }
 }

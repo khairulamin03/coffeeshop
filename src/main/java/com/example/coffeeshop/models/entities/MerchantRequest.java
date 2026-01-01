@@ -33,4 +33,5 @@ public class MerchantRequest {
     private MerchantStatus status;
 
     private LocalDateTime createdAt;
+    private LocalDateTime approvedAt;
 }

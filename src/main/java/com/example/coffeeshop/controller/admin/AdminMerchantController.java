@@ -2,13 +2,15 @@ package com.example.coffeeshop.controller.admin;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.coffeeshop.DTO.Request.AdminRequestCustToMerchantDTO;
 import com.example.coffeeshop.service.AdminMerchantService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -16,11 +18,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminMerchantController {
-    private final AdminMerchantService service;
+    private final AdminMerchantService adminMerchantService;
 
-    @PostMapping("/{id}/approve")
-    public ResponseEntity<?> approve(@PathVariable Long id) {
-        service.approveMerchant(id);
-        return ResponseEntity.ok("Approved");
+    @PostMapping("/approve")
+    public ResponseEntity<?> approve(@Valid @RequestBody AdminRequestCustToMerchantDTO adminRequestCustToMerchantDTO) {
+
+        return ResponseEntity.ok(adminMerchantService.approveMerchant(adminRequestCustToMerchantDTO.getRequestId()));
     }
 }

@@ -21,46 +21,46 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class MerchantService {
-    private final MerchantRequestRepository merchantRequestRepository;
-    private final UserRepository userRepository;
+        private final MerchantRequestRepository merchantRequestRepository;
+        private final UserRepository userRepository;
 
-    public MessageStatus<Map<String, Object>> requestMerchant(
-            String email,
-            MerchantRequestDTO dto) {
+        public MessageStatus<Map<String, Object>> requestMerchant(
+                        String email,
+                        MerchantRequestDTO dto) {
 
-        Users user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                Users user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        return merchantRequestRepository
-                .findByUserAndStatus(user, MerchantStatus.PENDING)
-                .map(existing -> {
+                return merchantRequestRepository
+                                .findByUserAndStatus(user, MerchantStatus.PENDING)
+                                .map(existing -> {
 
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("status", existing.getStatus());
-                    data.put("requestedAt", existing.getCreatedAt());
+                                        Map<String, Object> data = new HashMap<>();
+                                        data.put("status", existing.getStatus());
+                                        data.put("requestedAt", existing.getCreatedAt());
 
-                    return MessageStatus.fail(
-                            "Merchant request still pending",
-                            data);
-                })
-                .orElseGet(() -> {
+                                        return MessageStatus.fail(
+                                                        "Merchant request still pending",
+                                                        data);
+                                })
+                                .orElseGet(() -> {
 
-                    MerchantRequest request = new MerchantRequest();
-                    request.setUser(user);
-                    request.setShopName(dto.getShopName());
-                    request.setAddress(dto.getAddress());
-                    request.setStatus(MerchantStatus.PENDING);
-                    request.setCreatedAt(LocalDateTime.now());
+                                        MerchantRequest request = new MerchantRequest();
+                                        request.setUser(user);
+                                        request.setShopName(dto.getShopName());
+                                        request.setAddress(dto.getAddress());
+                                        request.setStatus(MerchantStatus.PENDING);
+                                        request.setCreatedAt(LocalDateTime.now());
 
-                    merchantRequestRepository.save(request);
+                                        merchantRequestRepository.save(request);
 
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("status", request.getStatus());
-                    data.put("requestedAt", request.getCreatedAt());
+                                        Map<String, Object> data = new HashMap<>();
+                                        data.put("status", request.getStatus());
+                                        data.put("requestedAt", request.getCreatedAt());
 
-                    return MessageStatus.success(
-                            "Merchant request submitted successfully",
-                            data);
-                });
-    }
+                                        return MessageStatus.success(
+                                                        "Merchant request submitted successfully",
+                                                        data);
+                                });
+        }
 }
