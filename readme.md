@@ -1,13 +1,29 @@
 # ☕ Coffeeshop Backend API
 
-Backend REST API untuk aplikasi **Coffee Shop** menggunakan **Spring Boot**, **JWT Authentication**, dan **Role-Based Access Control (RBAC)**.
+Backend REST API untuk aplikasi **Coffee Shop Platform** yang dibangun menggunakan **Spring Boot**, **JWT Authentication**, dan **Role-Based Access Control (RBAC)**.
 
-Project ini mendukung:
-- User authentication & authorization
-- Merchant registration flow (approval & rejection system)
+Project ini dirancang sebagai **real-world backend system**, mencakup:
+- Authentication & Authorization
+- Multi-role user system
+- Merchant registration & approval flow
 - Admin management
-- Standardized API response
-- PostgreSQL + Docker
+- Clean architecture & standardized API response
+
+---
+
+## 📌 Project Purpose
+
+Project ini dibuat untuk menunjukkan kemampuan dalam:
+- Merancang **secure backend system**
+- Mengimplementasikan **JWT-based authentication**
+- Mengelola **role & permission**
+- Menangani **business rules & edge cases**
+- Menulis **clean, maintainable Spring Boot code**
+
+Cocok sebagai **backend portfolio** untuk posisi:
+- Backend Engineer
+- Java Developer
+- Spring Boot Developer
 
 ---
 
@@ -15,63 +31,98 @@ Project ini mendukung:
 
 - **Java 21**
 - **Spring Boot 4**
-- **Spring Security (JWT)**
+- **Spring Security**
+- **JWT (JSON Web Token)**
 - **Spring Data JPA (Hibernate)**
 - **PostgreSQL**
-- **Docker & Docker Compose**
 - **Maven**
+- **Docker & Docker Compose**
 - **Swagger / OpenAPI**
 
 ---
 
-## 📦 Features
+## 🧱 Architecture Overview
 
-### 🔐 Authentication & Security
-- JWT-based authentication
-- Stateless session
-- Password encryption (BCrypt)
-- Custom `UserDetailsService`
-- Role-based endpoint protection (`@PreAuthorize`)
+Project menggunakan pendekatan **layered architecture**:
 
----
 
-### 👥 User & Role
-- User registration & login
-- Multiple roles per user (Many-to-Many)
-- Default role saat signup: `CUSTOMER`
-- Roles:
-  - `CUSTOMER`
-  - `MERCHANT`
-  - `ADMIN`
+Dengan pemisahan yang jelas antara:
+- **Controller** → HTTP handling
+- **Service** → Business logic
+- **Repository** → Data access
+- **Security** → Authentication & Authorization
+- **DTO** → Request / Response contract
 
 ---
 
-## 🏪 Merchant Flow (Customer → Admin Approval)
+## 🔐 Authentication & Security
 
-### Status Merchant
+### JWT Authentication
+- Login menghasilkan **JWT token**
+- Token dikirim via `Authorization: Bearer <token>`
+- Stateless (tanpa session server-side)
+
+### Password Security
+- Password disimpan menggunakan **BCrypt hashing**
+- Tidak ada plaintext password di database
+
+### Custom Security
+- `CustomUserDetails`
+- `CustomUserDetailsService`
+- `JwtAuthenticationFilter`
+
+---
+
+## 👥 User & Role System
+
+### User
+- User login menggunakan **email**
+- Satu user dapat memiliki **lebih dari satu role**
+
+### Roles
+- `CUSTOMER`
+- `MERCHANT`
+- `ADMIN`
+
+Role disimpan menggunakan **Many-to-Many relationship**.
+
+---
+
+## 🏪 Merchant Flow (Core Feature)
+
+### 1️⃣ Customer Request Merchant
+- User dengan role `CUSTOMER` dapat mengajukan request menjadi merchant
+- Data disimpan sebagai `MerchantRequest`
+- Status awal: `PENDING`
+
+### 2️⃣ Business Rules
+- User **tidak bisa request ulang** jika status masih `PENDING`
+- Sistem akan mengembalikan response:
+  - Status request
+  - Waktu pengajuan
+
+### 3️⃣ Admin Approval
+- Admin dapat:
+  - **Approve** merchant
+  - **Reject** merchant (dengan alasan)
+- Jika di-approve:
+  - Status → `APPROVED`
+  - Role `MERCHANT` otomatis ditambahkan ke user
+
+### 4️⃣ Merchant Status
 - `PENDING`
 - `APPROVED`
 - `REJECTED`
 
 ---
 
-### 1️⃣ Customer Request Merchant
-- Endpoint hanya dapat diakses oleh role `CUSTOMER`
-- Sistem akan mengecek:
-  - Apakah user memiliki merchant request `PENDING`
-- Jika masih `PENDING` → request **ditolak tanpa exception**
-- Jika tidak ada → request baru dibuat dengan status `PENDING`
+## 🛠 Admin Features
 
----
+- List merchant request berdasarkan status
+- Approve merchant
+- Reject merchant dengan alasan
+- Role assignment otomatis
 
-### 2️⃣ Admin Approve / Reject Merchant
-- Endpoint hanya dapat diakses oleh role `ADMIN`
-- Admin dapat:
-  - **Approve merchant**
-  - **Reject merchant dengan alasan**
-
----
-
-### 3️⃣ Role Update Logic
-- Saat merchant di-approve:
-  - Role `MERCHANT` **ditambahkan**, bukan menggantikan
+Semua endpoint admin dilindungi dengan:
+```java
+@PreAuthorize("hasRole('ADMIN')")

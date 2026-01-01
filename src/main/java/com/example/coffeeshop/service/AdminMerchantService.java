@@ -1,12 +1,16 @@
 package com.example.coffeeshop.service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.coffeeshop.config.MessageStatus;
+import com.example.coffeeshop.models.entities.MerchantRequest;
 import com.example.coffeeshop.models.entities.RoleEntity;
 import com.example.coffeeshop.models.entities.Users;
 import com.example.coffeeshop.models.enums.MerchantStatus;
@@ -90,5 +94,50 @@ public class AdminMerchantService {
                                                                         "reason", reason));
                                 })
                                 .orElseGet(() -> MessageStatus.fail("Merchant request not found", null));
+        }
+
+        public MessageStatus<?> listAll() {
+
+                Sort sort = Sort.by(Sort.Direction.ASC, "user.id");
+
+                var requests = merchantRequestRepository.findAll(sort);
+
+                return MessageStatus.success(
+                                "Merchant requests fetched",
+                                mapResponse(requests));
+        }
+
+        public MessageStatus<?> listByStatus(MerchantStatus status) {
+
+                Sort sort = Sort.by(Sort.Direction.ASC, "user.id");
+
+                var requests = merchantRequestRepository.findByStatus(status, sort);
+
+                return MessageStatus.success(
+                                "Merchant requests fetched",
+                                mapResponse(requests));
+        }
+
+        private List<Map<String, Object>> mapResponse(
+                        List<MerchantRequest> requests) {
+
+                return requests.stream()
+                                .map(r -> {
+                                        Map<String, Object> map = new HashMap<>();
+
+                                        map.put("requestId", r.getId());
+                                        map.put("userId", r.getUser().getId());
+                                        map.put("email", r.getUser().getEmail());
+                                        map.put("shopName", r.getShopName());
+                                        map.put("status", r.getStatus().name());
+                                        map.put("requestedAt", r.getCreatedAt());
+
+                                        // OPTIONAL FIELDS (AMAN)
+                                        map.put("approvedAt", r.getApprovedAt());
+                                        map.put("rejectedAt", r.getRejectedAt());
+
+                                        return map;
+                                })
+                                .toList();
         }
 }
