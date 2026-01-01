@@ -34,9 +34,8 @@ public class AdminMerchantService {
                                         if (request.getStatus() == MerchantStatus.APPROVED) {
                                                 return MessageStatus.fail(
                                                                 "Merchant request already approved", null);
-                                        } else if (request.getStatus() == MerchantStatus.PENDING) {
-                                                return MessageStatus.fail(
-                                                                "Merchant request already processed", null);
+                                        } else if (request.getStatus() == MerchantStatus.REJECTED) {
+                                                return MessageStatus.fail("Merchant reuqest already rejected", null);
                                         }
 
                                         // update request
@@ -60,6 +59,35 @@ public class AdminMerchantService {
                                                                         "requestId", request.getId(),
                                                                         "userEmail", user.getEmail(),
                                                                         "newRole", "MERCHANT"));
+                                })
+                                .orElseGet(() -> MessageStatus.fail("Merchant request not found", null));
+        }
+
+        public MessageStatus<?> rejectMerchant(Long requestId, String action, String reason) {
+
+                // Update request status
+                return merchantRequestRepository.findById(requestId)
+                                .map(request -> {
+
+                                        if (request.getStatus() == MerchantStatus.REJECTED) {
+                                                return MessageStatus.fail(
+                                                                "Merchant request already rejected", null);
+
+                                        }
+
+                                        // update request
+                                        request.setStatus(MerchantStatus.REJECTED);
+                                        request.setRejectedAt(LocalDateTime.now());
+                                        request.setRejectionReason(reason);
+
+                                        merchantRequestRepository.save(request);
+
+                                        return MessageStatus.success(
+                                                        "Merchant rejected successfully",
+                                                        Map.of(
+                                                                        "requestId", request.getId(),
+                                                                        "userEmail", request.getUser().getEmail(),
+                                                                        "reason", reason));
                                 })
                                 .orElseGet(() -> MessageStatus.fail("Merchant request not found", null));
         }

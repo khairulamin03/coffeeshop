@@ -34,4 +34,6 @@ public class MerchantRequest {
 
     private LocalDateTime createdAt;
     private LocalDateTime approvedAt;
+    private LocalDateTime rejectedAt;
+    private String rejectionReason;
 }

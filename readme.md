@@ -4,7 +4,7 @@ Backend REST API untuk aplikasi **Coffee Shop** menggunakan **Spring Boot**, **J
 
 Project ini mendukung:
 - User authentication & authorization
-- Merchant registration flow (approval system)
+- Merchant registration flow (approval & rejection system)
 - Admin management
 - Standardized API response
 - PostgreSQL + Docker
@@ -31,44 +31,48 @@ Project ini mendukung:
 - Stateless session
 - Password encryption (BCrypt)
 - Custom `UserDetailsService`
-- Role-based endpoint protection
+- Role-based endpoint protection (`@PreAuthorize`)
+
+---
 
 ### 👥 User & Role
 - User registration & login
 - Multiple roles per user (Many-to-Many)
+- Default role saat signup: `CUSTOMER`
 - Roles:
   - `CUSTOMER`
   - `MERCHANT`
   - `ADMIN`
 
-### 🏪 Merchant Flow
-- Customer dapat mengajukan request menjadi merchant
-- Status merchant:
-  - `PENDING`
-  - `APPROVED`
-  - `REJECTED`
-- User **tidak bisa request ulang** jika status masih `PENDING`
-- Admin dapat approve / reject merchant
-- Role `MERCHANT` otomatis ditambahkan saat request di-approve
-- Sistem aman dari double request
+---
+
+## 🏪 Merchant Flow (Customer → Admin Approval)
+
+### Status Merchant
+- `PENDING`
+- `APPROVED`
+- `REJECTED`
 
 ---
 
-## 🔄 Merchant Business Flow
-
 ### 1️⃣ Customer Request Merchant
-- Endpoint hanya bisa diakses oleh role `CUSTOMER`
-- Sistem akan cek:
-  - Apakah user sudah memiliki request `PENDING`
-- Jika ada → response gagal (tanpa exception)
-- Jika tidak ada → request dibuat dengan status `PENDING`
+- Endpoint hanya dapat diakses oleh role `CUSTOMER`
+- Sistem akan mengecek:
+  - Apakah user memiliki merchant request `PENDING`
+- Jika masih `PENDING` → request **ditolak tanpa exception**
+- Jika tidak ada → request baru dibuat dengan status `PENDING`
 
-### 2️⃣ Admin Review Merchant
-- Admin melihat daftar merchant request
+---
+
+### 2️⃣ Admin Approve / Reject Merchant
+- Endpoint hanya dapat diakses oleh role `ADMIN`
 - Admin dapat:
-  - Approve → status jadi `APPROVED`, role `MERCHANT` ditambahkan
-  - Reject → status jadi `REJECTED`
+  - **Approve merchant**
+  - **Reject merchant dengan alasan**
 
-### 3️⃣ Role Update
-- User **tidak kehilangan role lama**
+---
+
+### 3️⃣ Role Update Logic
+- Saat merchant di-approve:
+  - Role `MERCHANT` **ditambahkan**, bukan menggantikan
 - Contoh:

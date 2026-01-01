@@ -1,5 +1,6 @@
 package com.example.coffeeshop.DTO.Request;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Id;
 import lombok.Data;
 
@@ -7,4 +8,8 @@ import lombok.Data;
 public class AdminRequestCustToMerchantDTO {
     @Id
     private Long requestId;
+    @Nullable
+    private String action; // "APPROVE" or "REJECT"
+    @Nullable
+    private String rejectionReason; // Optional, only for REJECT action
 }

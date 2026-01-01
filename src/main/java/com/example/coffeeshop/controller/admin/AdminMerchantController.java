@@ -23,6 +23,21 @@ public class AdminMerchantController {
     @PostMapping("/approve")
     public ResponseEntity<?> approve(@Valid @RequestBody AdminRequestCustToMerchantDTO adminRequestCustToMerchantDTO) {
 
-        return ResponseEntity.ok(adminMerchantService.approveMerchant(adminRequestCustToMerchantDTO.getRequestId()));
+        if (adminRequestCustToMerchantDTO.getRequestId() != null
+                && adminRequestCustToMerchantDTO.getAction().isBlank() == true
+                && adminRequestCustToMerchantDTO.getRejectionReason().isBlank() == true) {
+            return ResponseEntity
+                    .ok(adminMerchantService.approveMerchant(adminRequestCustToMerchantDTO.getRequestId()));
+        } else if (adminRequestCustToMerchantDTO.getRequestId() != null
+                && adminRequestCustToMerchantDTO.getAction().isBlank() == false
+                && adminRequestCustToMerchantDTO.getRejectionReason().isBlank() == false) {
+
+            return ResponseEntity
+                    .ok(adminMerchantService.rejectMerchant(adminRequestCustToMerchantDTO.getRequestId(),
+                            adminRequestCustToMerchantDTO.getAction(),
+                            adminRequestCustToMerchantDTO.getRejectionReason()));
+        }
+
+        return ResponseEntity.badRequest().body("Invalid action. Must be 'APPROVE' or 'REJECT'.");
     }
 }
