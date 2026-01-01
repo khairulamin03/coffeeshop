@@ -1,4 +1,4 @@
-package com.example.coffeeshop.DTO.Request;
+package com.example.coffeeshop.dto.request;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Id;

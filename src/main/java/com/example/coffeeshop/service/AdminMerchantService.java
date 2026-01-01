@@ -5,11 +5,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.coffeeshop.config.MessageStatus;
+import com.example.coffeeshop.dto.request.AdminRequestCustToMerchantDTO;
+import com.example.coffeeshop.dto.response.MerchantApprovalResponse;
 import com.example.coffeeshop.models.entities.MerchantRequest;
 import com.example.coffeeshop.models.entities.RoleEntity;
 import com.example.coffeeshop.models.entities.Users;
@@ -25,119 +26,112 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class AdminMerchantService {
+
         private final MerchantRequestRepository merchantRequestRepository;
         private final RoleRepository roleRepository;
         private final UserRepository userRepository;
 
-        public MessageStatus<?> approveMerchant(Long requestId) {
+        public MessageStatus<MerchantApprovalResponse> processMerchant(AdminRequestCustToMerchantDTO dto) {
 
-                // Update request status
-                return merchantRequestRepository.findById(requestId)
-                                .map(request -> {
+                MerchantRequest request = merchantRequestRepository.findById(dto.getRequestId())
+                                .orElseThrow(() -> new IllegalArgumentException("Merchant request not found"));
 
-                                        if (request.getStatus() == MerchantStatus.APPROVED) {
-                                                return MessageStatus.fail(
-                                                                "Merchant request already approved", null);
-                                        } else if (request.getStatus() == MerchantStatus.REJECTED) {
-                                                return MessageStatus.fail("Merchant reuqest already rejected", null);
-                                        }
+                if (request.getStatus() != MerchantStatus.PENDING) {
+                        return MessageStatus.fail(
+                                        "Request has been processed and than the status is "
+                                                        + request.getStatus().name() + " You can't change to "
+                                                        + dto.getAction(),
+                                        new MerchantApprovalResponse(
+                                                        request.getId(),
+                                                        request.getUser().getEmail(),
+                                                        request.getStatus().name()));
+                }
 
-                                        // update request
-                                        request.setStatus(MerchantStatus.APPROVED);
-                                        request.setApprovedAt(LocalDateTime.now());
+                if ("APPROVE".equalsIgnoreCase(dto.getAction())) {
+                        return approve(request);
+                }
 
-                                        // add MERCHANT role
-                                        Users user = request.getUser();
-                                        RoleEntity merchantRole = roleRepository
-                                                        .findByName(RoleName.MERCHANT)
-                                                        .orElseThrow();
+                if ("REJECT".equalsIgnoreCase(dto.getAction())) {
+                        return reject(request, dto.getRejectionReason());
+                }
 
-                                        user.getRoles().add(merchantRole);
-
-                                        merchantRequestRepository.save(request);
-                                        userRepository.save(user);
-
-                                        return MessageStatus.success(
-                                                        "Merchant approved successfully",
-                                                        Map.of(
-                                                                        "requestId", request.getId(),
-                                                                        "userEmail", user.getEmail(),
-                                                                        "newRole", "MERCHANT"));
-                                })
-                                .orElseGet(() -> MessageStatus.fail("Merchant request not found", null));
+                return MessageStatus.fail(
+                                "Invalid action",
+                                new MerchantApprovalResponse(
+                                                request.getId(),
+                                                request.getUser().getEmail(),
+                                                request.getStatus().name()));
         }
 
-        public MessageStatus<?> rejectMerchant(Long requestId, String action, String reason) {
+        private MessageStatus<MerchantApprovalResponse> approve(MerchantRequest request) {
 
-                // Update request status
-                return merchantRequestRepository.findById(requestId)
-                                .map(request -> {
+                request.setStatus(MerchantStatus.APPROVED);
+                request.setApprovedAt(LocalDateTime.now());
 
-                                        if (request.getStatus() == MerchantStatus.REJECTED) {
-                                                return MessageStatus.fail(
-                                                                "Merchant request already rejected", null);
+                Users user = request.getUser();
+                RoleEntity role = roleRepository.findByName(RoleName.MERCHANT).orElseThrow();
+                user.getRoles().add(role);
 
-                                        }
-
-                                        // update request
-                                        request.setStatus(MerchantStatus.REJECTED);
-                                        request.setRejectedAt(LocalDateTime.now());
-                                        request.setRejectionReason(reason);
-
-                                        merchantRequestRepository.save(request);
-
-                                        return MessageStatus.success(
-                                                        "Merchant rejected successfully",
-                                                        Map.of(
-                                                                        "requestId", request.getId(),
-                                                                        "userEmail", request.getUser().getEmail(),
-                                                                        "reason", reason));
-                                })
-                                .orElseGet(() -> MessageStatus.fail("Merchant request not found", null));
-        }
-
-        public MessageStatus<?> listAll() {
-
-                Sort sort = Sort.by(Sort.Direction.ASC, "user.id");
-
-                var requests = merchantRequestRepository.findAll(sort);
+                merchantRequestRepository.save(request);
+                userRepository.save(user);
 
                 return MessageStatus.success(
-                                "Merchant requests fetched",
-                                mapResponse(requests));
+                                "Merchant approved successfully",
+                                new MerchantApprovalResponse(
+                                                request.getId(),
+                                                user.getEmail(),
+                                                MerchantStatus.APPROVED.name()));
         }
 
-        public MessageStatus<?> listByStatus(MerchantStatus status) {
+        private MessageStatus<MerchantApprovalResponse> reject(
+                        MerchantRequest request,
+                        String reason) {
 
-                Sort sort = Sort.by(Sort.Direction.ASC, "user.id");
+                request.setStatus(MerchantStatus.REJECTED);
+                request.setRejectedAt(LocalDateTime.now());
+                request.setRejectionReason(reason);
 
-                var requests = merchantRequestRepository.findByStatus(status, sort);
+                merchantRequestRepository.save(request);
 
                 return MessageStatus.success(
-                                "Merchant requests fetched",
-                                mapResponse(requests));
+                                "Merchant rejected successfully",
+                                new MerchantApprovalResponse(
+                                                request.getId(),
+                                                request.getUser().getEmail(),
+                                                MerchantStatus.REJECTED.name()));
         }
 
-        private List<Map<String, Object>> mapResponse(
-                        List<MerchantRequest> requests) {
+        public MessageStatus<List<Map<String, Object>>> listByStatus(MerchantStatus status) {
 
-                return requests.stream()
-                                .map(r -> {
-                                        Map<String, Object> map = new HashMap<>();
+                List<MerchantRequest> requests = merchantRequestRepository.findByStatusOrderByUser_IdAsc(status);
 
-                                        map.put("requestId", r.getId());
-                                        map.put("userId", r.getUser().getId());
-                                        map.put("email", r.getUser().getEmail());
-                                        map.put("shopName", r.getShopName());
-                                        map.put("status", r.getStatus().name());
-                                        map.put("requestedAt", r.getCreatedAt());
-
-                                        // OPTIONAL FIELDS (AMAN)
-                                        map.put("approvedAt", r.getApprovedAt());
-                                        map.put("rejectedAt", r.getRejectedAt());
-
-                                        return map;
-                                })
+                List<Map<String, Object>> result = requests.stream()
+                                .map(this::toMap)
                                 .toList();
+
+                return MessageStatus.success("Merchant requests fetched", result);
+        }
+
+        public MessageStatus<List<Map<String, Object>>> listAll() {
+
+                List<Map<String, Object>> result = merchantRequestRepository.findAll().stream()
+                                .map(this::toMap)
+                                .toList();
+
+                return MessageStatus.success("All merchant requests", result);
+        }
+
+        private Map<String, Object> toMap(MerchantRequest r) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("requestId", r.getId());
+                map.put("userId", r.getUser().getId());
+                map.put("email", r.getUser().getEmail());
+                map.put("shopName", r.getShopName());
+                map.put("status", r.getStatus());
+                map.put("requestedAt", r.getCreatedAt());
+                map.put("approvedAt", r.getApprovedAt());
+                map.put("rejectedAt", r.getRejectedAt());
+                return map;
+
         }
 }

@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.example.coffeeshop.DTO.Request.CategoryRequest;
-import com.example.coffeeshop.DTO.Response.CategoryResponse;
+import com.example.coffeeshop.dto.request.CategoryRequest;
+import com.example.coffeeshop.dto.response.CategoryResponse;
 import com.example.coffeeshop.models.entities.Category;
 import com.example.coffeeshop.models.repository.CategoryRepository;
 

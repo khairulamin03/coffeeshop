@@ -7,9 +7,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.coffeeshop.DTO.Request.CafeStoreGetListCity;
-import com.example.coffeeshop.DTO.Request.CafeStoreRequest;
-import com.example.coffeeshop.DTO.Response.CafeStoreResponse;
+import com.example.coffeeshop.dto.request.CafeStoreGetListCity;
+import com.example.coffeeshop.dto.request.CafeStoreRequest;
+import com.example.coffeeshop.dto.response.CafeStoreResponse;
 import com.example.coffeeshop.models.entities.CafeStore;
 import com.example.coffeeshop.models.repository.CafeStoreRepository;
 

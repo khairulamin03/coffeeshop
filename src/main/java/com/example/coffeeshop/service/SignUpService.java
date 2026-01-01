@@ -4,7 +4,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.coffeeshop.DTO.Request.SignUpRequest;
+import com.example.coffeeshop.dto.request.SignUpRequest;
 import com.example.coffeeshop.models.entities.RoleEntity;
 import com.example.coffeeshop.models.entities.Users;
 import com.example.coffeeshop.models.enums.RoleName;

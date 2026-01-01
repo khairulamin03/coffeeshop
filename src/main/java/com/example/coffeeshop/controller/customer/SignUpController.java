@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.coffeeshop.DTO.Request.SignUpRequest;
 import com.example.coffeeshop.config.MessageStatus;
+import com.example.coffeeshop.dto.request.SignUpRequest;
 import com.example.coffeeshop.service.SignUpService;
 
 import jakarta.validation.Valid;

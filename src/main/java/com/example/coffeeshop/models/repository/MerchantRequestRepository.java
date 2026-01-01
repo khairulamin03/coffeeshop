@@ -15,4 +15,6 @@ public interface MerchantRequestRepository extends JpaRepository<MerchantRequest
 
     List<MerchantRequest> findByStatus(MerchantStatus merchantStatus, Sort sort);
 
+    List<MerchantRequest> findByStatusOrderByUser_IdAsc(MerchantStatus status);
+
 }

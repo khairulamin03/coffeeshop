@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.coffeeshop.DTO.Request.CafeStoreGetListCity;
-import com.example.coffeeshop.DTO.Request.CafeStoreRequest;
-import com.example.coffeeshop.DTO.Response.CafeStoreResponse;
 import com.example.coffeeshop.config.MessageStatus;
+import com.example.coffeeshop.dto.request.CafeStoreGetListCity;
+import com.example.coffeeshop.dto.request.CafeStoreRequest;
+import com.example.coffeeshop.dto.response.CafeStoreResponse;
 import com.example.coffeeshop.service.CafeStoreService;
 
 import jakarta.validation.Valid;

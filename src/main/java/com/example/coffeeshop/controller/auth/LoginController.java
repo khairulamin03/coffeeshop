@@ -1,6 +1,5 @@
 package com.example.coffeeshop.controller.auth;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -12,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.coffeeshop.DTO.Request.LoginRequest;
 import com.example.coffeeshop.config.MessageStatus;
+import com.example.coffeeshop.dto.request.LoginRequest;
 import com.example.coffeeshop.security.CustomUserDetails;
 import com.example.coffeeshop.service.JwtService;
 
@@ -23,11 +22,14 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/auth/login")
 public class LoginController {
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
-    @Autowired
-    private JwtService jwtService;
+    private final JwtService jwtService;
+
+    public LoginController(AuthenticationManager authenticationManager, JwtService jwtService) {
+        this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
+    }
 
     @PostMapping
     public ResponseEntity<MessageStatus<String>> login(

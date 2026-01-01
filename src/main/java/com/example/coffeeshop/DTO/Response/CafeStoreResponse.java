@@ -1,4 +1,4 @@
-package com.example.coffeeshop.DTO.Response;
+package com.example.coffeeshop.dto.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

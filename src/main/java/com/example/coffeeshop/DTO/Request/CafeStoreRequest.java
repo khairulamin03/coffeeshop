@@ -1,4 +1,4 @@
-package com.example.coffeeshop.DTO.Request;
+package com.example.coffeeshop.dto.request;
 
 import java.math.BigDecimal;
 import java.time.LocalTime;

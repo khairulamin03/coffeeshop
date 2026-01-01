@@ -7,8 +7,8 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.coffeeshop.DTO.Request.MerchantRequestDTO;
 import com.example.coffeeshop.config.MessageStatus;
+import com.example.coffeeshop.dto.request.MerchantRequestDTO;
 import com.example.coffeeshop.models.entities.MerchantRequest;
 import com.example.coffeeshop.models.entities.Users;
 import com.example.coffeeshop.models.enums.MerchantStatus;

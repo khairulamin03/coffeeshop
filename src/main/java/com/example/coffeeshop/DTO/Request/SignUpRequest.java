@@ -1,4 +1,4 @@
-package com.example.coffeeshop.DTO.Request;
+package com.example.coffeeshop.dto.request;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
