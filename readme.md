@@ -75,4 +75,3 @@ Project ini mendukung:
 ### 3️⃣ Role Update Logic
 - Saat merchant di-approve:
   - Role `MERCHANT` **ditambahkan**, bukan menggantikan
-- Contoh:
