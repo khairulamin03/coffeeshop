@@ -1,4 +1,4 @@
-# ☕ Coffeeshop Backend API
+# ☕ Backend API
 
 Backend REST API untuk aplikasi **Coffee Shop Platform** yang dibangun menggunakan **Spring Boot**, **JWT Authentication**, dan **Role-Based Access Control (RBAC)**.
 
